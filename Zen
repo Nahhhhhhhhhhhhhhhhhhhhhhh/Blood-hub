@@ -1,0 +1,108 @@
+local Window = Rayfield:CreateWindow({
+   Name = "Zen Hub",
+   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   LoadingTitle = "Official Zen Hub",
+   LoadingSubtitle = "by Zen",
+   Theme = "BloodTheme", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil, -- Create a custom folder for your hub/game
+      FileName = "Zen Hub"
+   },
+
+   Discord = {
+      Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
+      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+   },
+
+   KeySystem = false, -- Set this to true to use our key system
+   KeySettings = {
+      Title = "Untitled",
+      Subtitle = "Key System",
+      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
+      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+   }
+})
+
+local MainTab = Window:CreateTab("Cheats", nil) -- Title, Image
+
+local MainSection = Tab:CreateSection("Main")
+Rayfield:Notify({
+   Title = "Welcome",
+   Content = "Notification Content",
+   Duration = 6.5,
+   Image = nil,
+})
+
+local Button = MainTab:CreateButton({
+   Name = "Aura Kill",
+   Callback = function()
+   local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local range = 10 -- Change this to modify the kill radius
+local damage = math.huge -- Inflicts instant kill
+local runService = game:GetService("RunService")
+
+local function isTeammate(targetPlayer)
+    if targetPlayer and targetPlayer:IsA("Player") then
+        return targetPlayer.Team == player.Team
+    end
+    return false
+end
+
+local function killEnemies()
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and obj:FindFirstChild("Humanoid") then
+            local humanoid = obj:FindFirstChild("Humanoid")
+            local rootPart = obj:FindFirstChild("HumanoidRootPart")
+            local targetPlayer = game.Players:GetPlayerFromCharacter(obj)
+
+            if humanoid and rootPart and (rootPart.Position - character.HumanoidRootPart.Position).Magnitude <= range then
+                if targetPlayer and (targetPlayer == player or isTeammate(targetPlayer)) then
+                    -- Skip self and teammates
+                    continue
+                else
+                    humanoid.Health = 0 -- Instantly kills enemies/NPCs
+                end
+            end
+        end
+    end
+end
+
+local toggle = true -- Toggleable script
+
+runService.RenderStepped:Connect(function()
+    if toggle then
+        killEnemies()
+    end
+end)
+
+-- Toggle system (binds to "X" key)
+local userInputService = game:GetService("UserInputService")
+userInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.X then
+        toggle = not toggle
+        print("Aura Kill: " .. (toggle and "Enabled" or "Disabled"))
+   end,
+})
+
+local Slider = Tab:CreateSlider({
+   Name = "Aura Kill Range",
+   Range = {0, 100000}, -- Adjust the range as needed
+   Increment = 100, -- Adjust the step size
+   Suffix = " Studs",
+   CurrentValue = 10000, -- Default value
+   Flag = "AuraKillRange",
+   Callback = function(Value)
+      -- Update the Aura Kill range dynamically
+      AuraKillRange = Value
+   end,
+})
